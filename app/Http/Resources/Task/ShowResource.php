@@ -5,7 +5,7 @@ namespace App\Http\Resources\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class IndexResource extends JsonResource
+class ShowResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -24,7 +24,10 @@ class IndexResource extends JsonResource
                 'id' => $this->category->id,
                 'title' => $this->category->title
             ] : null,
-            'tags' => $this->tags ? $this->tags->pluck('title') : null
+            'tags' => $this->tags->isNotEmpty() ? $this->tags->pluck('title') : null,
+            'created_at' => $this->created_at->format('Y-m-d H:i'),
+            'updated_at' => $this->updated_at && $this->updated_at !== $this->created_at ? null : $this->updated_at->format('Y-m-d H:i'),
+            'deleted_at' => $this->deleted_at ?? null
         ];
     }
 }

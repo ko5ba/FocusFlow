@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Task\IndexResource;
+use App\Http\Resources\Task\ShowResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-
+        //
     }
 
     /**
@@ -22,7 +23,7 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-
+        //
     }
 
     /**
