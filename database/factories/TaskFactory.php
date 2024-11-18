@@ -22,7 +22,7 @@ class TaskFactory extends Factory
             'user_id' => User::inRandomOrder()->first()->id,
             'title' => $this->faker->text(20),
             'description' => fake()->text(50),
-            'priority' => 1,
+            'priority' => $this->faker->randomElement(['Без приоритета', 'Низкий', 'Средний', 'Высокий']),
             'date_deadline' => $this->faker->date(),
             'status' => $this->faker->randomElement(['Не выполнена', 'В работе', 'Завершена', 'Отложена']),
             'category_id' => Category::inRandomOrder()->first()->id,

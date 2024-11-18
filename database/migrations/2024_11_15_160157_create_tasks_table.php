@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->index()->constrained('users')->cascadeOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->tinyInteger('priority')->default(0);
-            $table->timestamp('date_deadline')->nullable();
+            $table->enum('priority', ['Без приоритета', 'Низкий', 'Средний', 'Высокий'])->default('Без приоритета');
+            $table->date('date_deadline')->nullable();
             $table->enum('status', ['Не выполнена', 'В работе', 'Завершена', 'Отложена'])->default('Не выполнена');
             $table->foreignId('category_id')->nullable()->index()->constrained('categories')->nullOnDelete();
             $table->timestamps();

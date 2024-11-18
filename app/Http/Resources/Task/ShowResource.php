@@ -26,7 +26,9 @@ class ShowResource extends JsonResource
             ] : null,
             'tags' => $this->tags->isNotEmpty() ? $this->tags->pluck('title') : null,
             'created_at' => $this->created_at->format('Y-m-d H:i'),
-            'updated_at' => $this->updated_at && $this->updated_at !== $this->created_at ? null : $this->updated_at->format('Y-m-d H:i'),
+            'updated_at' => $this->updated_at && $this->updated_at->ne($this->created_at)
+                ? $this->updated_at->format('Y-m-d H:i')
+                : null,
             'deleted_at' => $this->deleted_at ?? null
         ];
     }

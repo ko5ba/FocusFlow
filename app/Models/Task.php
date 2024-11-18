@@ -16,7 +16,7 @@ class Task extends Model
      */
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['title', 'description', 'priority', 'date_deadline', 'status', 'category_id'];
+    protected $fillable = ['title', 'description', 'priority', 'date_deadline', 'status', 'category_id', 'user_id'];
     protected $table = 'tasks';
 
     public function user(): BelongsTo
