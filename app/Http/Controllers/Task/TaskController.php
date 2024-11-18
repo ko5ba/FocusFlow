@@ -8,7 +8,9 @@ use App\Http\Requests\Task\UpdateRequest;
 use App\Http\Resources\Task\IndexResource;
 use App\Http\Resources\Task\ShowResource;
 use App\Models\Task;
+use App\Services\Task\Service;
 use Illuminate\Auth\GuardHelpers;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,31 +19,24 @@ use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
+    protected $taskService;
+
+    public function __construct(Service $taskService)
+    {
+        $this->taskService = $taskService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         try {
-            $tasks = Task::query()
-                ->where('user_id', Auth::id())
-                ->get();
-
-            Log::info('Пользователь, просматривает список своих задач', [
-                'user_id' => Auth::id(),
-                'task_count' => $tasks->count()
-            ]);
+            $tasks = $this->taskService->getListTasksForUser(Auth::id());
 
             return IndexResource::collection($tasks);
         } catch (\Exception $e) {
-            Log::error('Ошибка при просмотре всех задач пользователем: ', [
-                'user_id' => Auth::id(),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
             return response()->json([
-                'message' => 'Ошибка при загрузке списка задач, попробуйте еще раз'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -54,36 +49,17 @@ class TaskController extends Controller
         try {
             $data = $request->validated();
             $data['user_id'] = Auth::id();
-            $tags = $data['tag_ids'] ?? [];
-            unset($data['tag_ids']);
-
-            DB::beginTransaction();
-            $task = Task::create($data);
-            $task->tags()->attach($tags);
-            DB::commit();
-
-            Log::info('Создание пользователем задачи', [
-                'user_id' => Auth::id(),
-                'task_id' => $task->id,
-                'tags' => $tags
-            ]);
+            $task = $this->taskService->storeTask($data);
 
             return response()->json([
                 'message' => 'Вы успешно создали задачу',
                 'task' => new ShowResource($task),
-                'tags' => $tags
+                'tags' =>  $data['tag_ids'] ?? null
             ], 201);
         } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Ошибка при добавлении задачи', [
-                'user_id' => Auth::id(),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
 
             return response()->json([
-                'message' => 'Ошибка при добавлении задачи, повторите попытку'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -91,26 +67,25 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Task $task)
+    public function show($id)
     {
         try {
+            $task = $this->taskService->getTaskById($id);
             Gate::authorize('view', $task);
 
-            Log::info('Просматривание задачи', [
-                'user_id' => Auth::id(),
-                'task_id' => $task->id
-            ]);
-
             return new ShowResource($task);
-        } catch (\Exception $e) {
-            Log::error('Ошибка при просмотре задачи', [
-                'user_id' => Auth::id(),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
+        }
+
+        catch (ModelNotFoundException $e) {
 
             return response()->json([
-                'message' => 'Ошибка при просмотре задачи, повторите попытку'
+                'message' => $e->getMessage()
+            ], 404);
+        }
+
+        catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -125,37 +100,16 @@ class TaskController extends Controller
 
             $data = $request->validated();
             $data['user_id'] = Auth::id();
-            $tags = $data['tag_ids'] ?? [];
-            unset($data['tag_ids']);
-
-            DB::beginTransaction();
-            $task->update($data);
-            $task->tags()->sync($tags);
-            DB::commit();
-
-            Log::info('Обновление данных задачи', [
-                'user_id' => Auth::id(),
-                'task_id' => $task->id,
-                'tags' => $tags
-            ]);
+            $task = $this->taskService->updateTask($task, $data);
 
             return response()->json([
                 'message' => 'Вы успешно обновили задачу',
                 'task' => new ShowResource($task),
-                'tags' => $tags
+                'tags' => $data['tags'] ?? null
             ], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Ошибка при обновлении задачи', [
-                'user_id' => Auth::id(),
-                'task_id' => $task->id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
             return response()->json([
-                'message' => 'Ошибка при обновлении данных задачи, повторите попытку'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -163,31 +117,19 @@ class TaskController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, Task $task)
+    public function destroy(Task $task)
     {
         try {
             Gate::authorize('delete', $task);
 
-            $task->delete();
-
-            Log::info('Удаление задачи', [
-                'user_id' => Auth::id(),
-                'task_id' => $task->id
-            ]);
+            $this->taskService->deleteTask($task);
 
             return response()->json([
-                'message' => 'Вы успешно удалили задачу, но можете ее восстановить в течении двух часов'
+                'message' => 'Вы успешно удалили задачу'
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Ошибка удаления задачи', [
-                'user_id' => Auth::id(),
-                'task_id' => $task->id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
             return response()->json([
-                'message' => 'Ошибка при удалении задачи, повторите попытку'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
