@@ -88,10 +88,15 @@ class Service
         try {
             $task = Task::query()->findOrFail($id);
 
+            Log::info('Task retrieved task', [
+                'user_id' => $task->user_id,
+                'task_id' => $task->id
+            ]);
+
             return $task;
         } catch (ModelNotFoundException $e) {
             Log::error('Error retrieving task', [
-                'user_id' => $id,
+                'user_id' => $task->user_id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTrace()
             ]);
@@ -99,7 +104,7 @@ class Service
             throw new \Exception('Задача не найдена');
         } catch (\Exception $e) {
             Log::error('Error retrieving task', [
-                'user_id' => $id,
+                'user_id' => $task->user_id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTrace()
             ]);
