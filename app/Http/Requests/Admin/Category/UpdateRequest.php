@@ -22,16 +22,14 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|string|max:30',
+            'title' => 'required|string',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'title.required' => 'Введите название',
-            'title.string' => 'Ошибка',
-            'title.max' => 'Максимальное количество символов не должно превышать 30'
+            'title.required' => 'Введите новое название для категории',
         ];
     }
 }

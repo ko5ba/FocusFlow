@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Admin\Category;
+namespace App\Http\Requests\Admin\Tag;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,14 +22,14 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|string',
+            'title' => 'required'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'title.required' => 'Введите название',
+            'title.required' => 'Введите название тега'
         ];
     }
 }

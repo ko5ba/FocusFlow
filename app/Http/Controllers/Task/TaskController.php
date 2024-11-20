@@ -34,9 +34,9 @@ class TaskController extends Controller
             $tasks = $this->taskService->getListTasksForUser(Auth::id());
 
             return IndexResource::collection($tasks);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'Ошибка при загрузке списка задач, повторите попытку'
             ], 500);
         }
     }
@@ -56,10 +56,9 @@ class TaskController extends Controller
                 'task' => new ShowResource($task),
                 'tags' =>  $data['tag_ids'] ?? null
             ], 201);
-        } catch (\Exception $e) {
-
+        } catch (\Exception) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'Ошибка при добавлении задачи, повторите попытку'
             ], 500);
         }
     }
@@ -76,16 +75,15 @@ class TaskController extends Controller
             return new ShowResource($task);
         }
 
-        catch (ModelNotFoundException $e) {
-
+        catch (ModelNotFoundException) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'Данная задача не найдена'
             ], 404);
         }
 
-        catch (\Exception $e) {
+        catch (\Exception) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'Ошибка при загрузки задачи, повторите попытку'
             ], 500);
         }
     }
@@ -107,9 +105,9 @@ class TaskController extends Controller
                 'task' => new ShowResource($task),
                 'tags' => $data['tags'] ?? null
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'Ошибка при обновлении данных задачи, повторите попытку'
             ], 500);
         }
     }
@@ -127,9 +125,9 @@ class TaskController extends Controller
             return response()->json([
                 'message' => 'Вы успешно удалили задачу'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'Ошибка при удалении задачи, повторите попытку'
             ], 500);
         }
     }

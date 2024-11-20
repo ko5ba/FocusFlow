@@ -8,6 +8,7 @@ use App\Http\Requests\Task\UpdateRequest;
 use App\Http\Resources\Category\IndexResource;
 use App\Http\Resources\Category\ShowResource;
 use App\Services\Admin\Category\Service;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CategoryController extends Controller
 {
@@ -26,8 +27,10 @@ class CategoryController extends Controller
             $categories = $this->categoryService->indexCategory();
 
             return IndexResource::collection($categories);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        } catch (\Exception) {
+            return response()->json([
+                'message' => 'Ошибка загрузки списка категорий, повторите попытку'
+            ], 500);
         }
     }
 
@@ -42,8 +45,10 @@ class CategoryController extends Controller
             $category = $this->categoryService->storeCategory($data);
 
             return new ShowResource($category);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        } catch (\Exception) {
+            return response()->json([
+                'message' => 'Ошибка при добавлении категории, повторите попытку'
+            ], 500);
         }
     }
 
@@ -56,8 +61,10 @@ class CategoryController extends Controller
             $categoryInfo = $this->categoryService->getCategory($id);
 
             return new ShowResource($categoryInfo);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        } catch (\Exception) {
+            return response()->json([
+                'message' => 'Ошибка при просмотре данных о категории, повторите попытку'
+            ], 500);
         }
     }
 
@@ -72,8 +79,18 @@ class CategoryController extends Controller
             $category = $this->categoryService->updateCategory($id, $data);
 
             return new ShowResource($category);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        }
+
+        catch (ModelNotFoundException) {
+            return response()->json([
+                'message' => 'Категория не найдена'
+            ], 404);
+        }
+
+        catch (\Exception) {
+            return response()->json([
+                'message' => 'Ошибка при обновлении данных категории, повторите попытку'
+            ], 500);
         }
     }
 
@@ -86,10 +103,20 @@ class CategoryController extends Controller
             $this->categoryService->deleteCategory($id);
 
             return response()->json([
-                'message' => 'Задача успешно удалена'
+                'message' => 'Категория успешно удалена'
             ], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        }
+
+        catch (ModelNotFoundException) {
+            return response()->json([
+                'message' => 'Категория не найдена'
+            ], 404);
+        }
+
+        catch (\Exception) {
+            return response()->json([
+                'message' => 'Ошибка при удалении категории, повторите попытку'
+            ], 500);
         }
     }
 }

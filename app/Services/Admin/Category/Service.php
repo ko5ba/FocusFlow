@@ -28,23 +28,11 @@ class Service
      */
     public function indexCategory(): \Illuminate\Database\Eloquent\Collection
     {
-        try {
-            $categories = Cache::remember(self::CACHE_KEY_CATEGORIES, 60 * 60 * 24, fn() => Category::all());
+        $categories = Cache::remember(self::CACHE_KEY_CATEGORIES, 60 * 60 * 24, fn() => Category::all());
 
-            Log::info('Categories have been cached', [
-                'categories_count' => $categories->count()
-            ]);
-
-            return $categories;
-        } catch (\Exception $e) {
-            Log::error('Categories were not cached', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Ошибка при получении списка категорий');
-        }
+        return $categories;
     }
+
 
     /**
      * Get a specific category by its ID
@@ -54,34 +42,10 @@ class Service
      */
     public function getCategory(int $id): Category
     {
-        try {
-            $category = Category::query()->findOrFail($id);
+        $category = Category::query()->findOrFail($id);
 
-            Log::info('Preview specific category', [
-                'category_id' => $category->id,
-                'category_title' => $category->title,
-            ]);
-
-            return $category;
-        } catch (ModelNotFoundException $e) {
-            Log::error('Category not found', [
-                'category_id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Категория не найдена');
-        } catch (\Exception $e) {
-            Log::error('Unknown error', [
-                'category_id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Неизвестная ошибка');
-        }
+        return $category;
     }
-
     /**
      * Store a new category
      *
@@ -90,27 +54,12 @@ class Service
      */
     public function storeCategory(array $data): Category
     {
-        try {
-            $category = Category::create($data);
+        $category = Category::create($data);
 
-            $this->resetCache();
+        $this->resetCache();
 
-            Log::info('Created category', [
-                'category_id' => $category->id,
-                'category_title' => $category->title,
-            ]);
-
-            return $category;
-        } catch (\Exception $e) {
-            Log::error('Category were not created', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Не удалось добавить новую категорию, повторите попытку');
-        }
+        return $category;
     }
-
     /**
      * Update an category
      *
@@ -120,37 +69,15 @@ class Service
      */
     public function updateCategory(int $id, array $data): Category
     {
-        try {
-            $category = Category::query()->findOrFail($id);
+        $category = Category::query()->findOrFail($id);
 
-            $category->update($data);
+        $category->update($data);
 
-            $this->resetCache();
+        $this->resetCache();
 
-            Log::info('Updated category', [
-                'category_id' => $category->id,
-                'category_title' => $category->title,
-            ]);
-
-            return $category;
-        } catch (ModelNotFoundException $e) {
-            Log::error('Category not found', [
-                'category_id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Category not found');
-        } catch (\Exception $e) {
-            Log::error('Unknown error', [
-                'category_id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Не удалось обновить задачу, повторите попытку');
-        }
+        return $category;
     }
+
     /**
      * Delete a category
      *
@@ -159,33 +86,10 @@ class Service
     */
     public function deleteCategory(int $id): void
     {
-        try {
-            $category = Category::query()->findOrFail($id);
+        $category = Category::query()->findOrFail($id);
 
-            $category->delete();
+        $category->delete();
 
-            $this->resetCache();
-
-            Log::info('Deleted category', [
-                'category_id' => $id,
-                'category_title' => $category->title,
-            ]);
-        } catch (ModelNotFoundException $e) {
-            Log::error('Category not found', [
-                'category_id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Категория не найдена');
-        } catch (\Exception $e) {
-            Log::error('Unknown error', [
-                'category_id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ]);
-
-            throw new \Exception('Ошибка при удалении категории, повторите попытку');
-        }
+        $this->resetCache();
     }
 }
